@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 
 @Controller
-public class TestController {
+public class TestController2 {
 
     @GetMapping("/")
     public String home() {
