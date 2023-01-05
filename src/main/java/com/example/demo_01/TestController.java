@@ -6,30 +6,34 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.io.*;
 
-@Controller
+@RestController
 public class TestController {
 
     @Autowired
     private ServiceCount serviceCount;
 
     @GetMapping("/")
-    public String home() {
-        return "home";
+    public ModelAndView home() {
+        return new ModelAndView("home");
     }
 
     @PostMapping("/home")
-    public String uploadFile(@RequestParam("file") MultipartFile[] file) throws IOException {
-            InputStream file01 = file[0].getInputStream();
-            InputStream file02 = file[1].getInputStream();
-
+    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile[] file)
+            throws IOException {
+        String filename = "Otchet.xlsx";
+        InputStream file01 = file[0].getInputStream();
+        InputStream file02 = file[1].getInputStream();
+        try {
         XSSFWorkbook wb_price = new XSSFWorkbook(file01);
         XSSFWorkbook wb_helper = new XSSFWorkbook(file02);
         Sheet sheet_price = wb_price.getSheetAt(0);
@@ -63,15 +67,29 @@ public class TestController {
                 }
             }
         }
-
+/*
         try {
-            FileOutputStream outputStream = new FileOutputStream(
-                    new File("/Users/bonusver/Desktop/Отчет отправка.xlsx"));
+            FileOutputStream outputStream = new FileOutputStream();
             wb_price.write(outputStream);
         } catch (Exception e) {
             System.out.println("Exception: " + e);
         }
+ */
 
-        return "download";
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            wb_price.write(out);
+            wb_price.close();
+            wb_helper.close();
+            file02.close();
+            file01.close();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
+                .body(out.toByteArray());
+        } catch (IOException e) {
+            throw new RuntimeException("ошибка номер 1 что то с эксель файлами" + e.getMessage());
+        }
+
     }
 }
