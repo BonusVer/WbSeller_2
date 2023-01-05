@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
@@ -39,7 +38,7 @@ public class TestController {
         Sheet sheet_price = wb_price.getSheetAt(0);
         Sheet sheet_helper = wb_helper.getSheetAt(0);
 
-        int z[] = {0,0};
+        int[] z;
         for (Row row_helper: sheet_helper) {
             Cell cell_helper = row_helper.getCell(0);
             if (cell_helper.getCellType() == CellType.STRING) {
@@ -53,7 +52,7 @@ public class TestController {
                     if (cell_helper.getNumericCellValue() == cell_price.getNumericCellValue()) {
                         Cell cell_price_cost = row_price.getCell(11); // цена в отчете
                         Cell cell_helper_sale = row_helper.getCell(1); //цена нужная
-                        Cell cell_price_now_discount = row_price.getCell(13);
+                        Cell cell_price_now_discount = row_price.getCell(13);//скидка действующая
                         Cell cell_price_sale = row_price.getCell(15); //запись скидки
                         Cell cell_price_price = row_price.getCell(12); // запись цены
 
@@ -67,15 +66,6 @@ public class TestController {
                 }
             }
         }
-/*
-        try {
-            FileOutputStream outputStream = new FileOutputStream();
-            wb_price.write(outputStream);
-        } catch (Exception e) {
-            System.out.println("Exception: " + e);
-        }
- */
-
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             wb_price.write(out);

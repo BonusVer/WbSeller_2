@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 public class ServiceCount {
 
     public int[] sellerCore( int cost, int discount, int price) {
-        int temp[] = {0, 0};
+        int[] temp = {0, 0};
         float new_discount = 0f;
         float cost_f = cost;
         if (price < 50) {
