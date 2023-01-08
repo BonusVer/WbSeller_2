@@ -39,6 +39,8 @@ public class TestController {
         Sheet sheet_helper = wb_helper.getSheetAt(0);
 
         int[] z;
+        int flag = 0;
+        int f_row = 1;
         for (Row row_helper: sheet_helper) {
             Cell cell_helper = row_helper.getCell(0);
             if (cell_helper.getCellType() == CellType.STRING) {
@@ -59,9 +61,55 @@ public class TestController {
                         z = serviceCount.sellerCore((int) cell_price_cost.getNumericCellValue(),
                                 (int) cell_price_now_discount.getNumericCellValue(),
                                 (int) cell_helper_sale.getNumericCellValue());
+
+                        if (flag == 0 && z[2] != 0) {
+                            Sheet sheet_2 = wb_price.createSheet("Примечание");
+                            Row row_2 = sheet_2.createRow(0);
+                            Cell cell_01 = row_2.createCell(0);
+                            cell_01.setCellValue("Артикул WB");
+                            Cell cell_02 = row_2.createCell(1);
+                            cell_02.setCellValue("Примечание");
+                            flag = 1;
+                        }
+
+                        if (z[2] != 0) {
+                            Sheet sheet_h = wb_price.getSheet("Примечание");
+                            Row row_h = sheet_h.createRow(f_row);
+                            f_row += 1;
+                            Cell h_0 = row_h.createCell(0);
+                            h_0.setCellValue((int) cell_price.getNumericCellValue());
+                            switch (z[2]) {
+                                case 1:
+                                    Cell h_0_2 = row_h.createCell(1);
+                                    h_0_2.setCellValue("Скорее всего данный товар новый на сайте. " +
+                                            "Скидка не может быть выше 60% по правилам маркетплейса. " +
+                                            "Цена товара до скидки была снижена более 20%");
+                                    break;
+                                case 2:
+                                    Cell h_1_2 = row_h.createCell(1);
+                                    h_1_2.setCellValue("Цена до скидки была снижена более 20%");
+                                    break;
+
+                                case 3:
+                                    Cell h_2_2 = row_h.createCell(1);
+                                    h_2_2.setCellValue("Цена товара не изменена." +
+                                            "Заявленная цена не соответствует правилам сайта. " +
+                                            "Укажите более низкую цену");
+                                    break;
+
+                                case 4:
+                                    Cell h_3_2 = row_h.createCell(1);
+                                    h_3_2.setCellValue("Цена товара не изенена. " +
+                                            "Товару указана цена меньше 50 руб.");
+                                    break;
+                            }
+                        }
+
+                        if (z[2] == 3 | z[2] == 4) {
+                            continue;
+                        }
                         cell_price_sale.setCellValue(z[1]);
                         cell_price_price.setCellValue(z[0]);
-
                     }
                 }
             }

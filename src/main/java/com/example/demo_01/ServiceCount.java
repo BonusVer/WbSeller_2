@@ -6,13 +6,14 @@ import org.springframework.stereotype.Service;
 public class ServiceCount {
 
     public int[] sellerCore( int cost, int discount, int price) {
-        int[] temp = {0, 0};
+        int[] temp = {0, 0, 0};
         float new_discount = 0f;
         float cost_f = cost;
         if (price < 50) {
             System.out.println("Товару указана цена меньше 50 руб.");
             temp[0] = cost;
             temp[1] = discount;
+            temp[2] = 4;
             return temp;
         }
         new_discount = 100 - (price * 100f / cost);
@@ -30,6 +31,7 @@ public class ServiceCount {
                 if (new_cost_f <= d_d_2) {
                     temp[0] = new_cost_f;
                     temp[1] = 3;
+                    temp[2] = 0;
                     return temp;
                 } else {
                     System.out.println("Цена товара не изменена. " +
@@ -37,6 +39,7 @@ public class ServiceCount {
                             "Укажите ниже цену.");
                     temp[0] = cost;
                     temp[1] = discount;
+                    temp[2] = 3;
                     return temp;
                 }
             }
@@ -50,11 +53,13 @@ public class ServiceCount {
                 if (new_cost_f >= d_d_2) {
                     temp[0] = new_cost_f;
                     temp[1] = 95;
+                    temp[2] = 0;
                     return temp;
                 } else {
                     System.out.println("Цена до скидки была снижена более 20%");
                     temp[0] = new_cost_f;
                     temp[1] = 95;
+                    temp[2] = 2;
                     return temp;
                 }
             }
@@ -71,14 +76,15 @@ public class ServiceCount {
             if (new_cost_f >= d_d_2) {
                 temp[0] = new_cost_f;
                 temp[1] = 60;
+                temp[2] = 0;
                 return temp;
             } else {
                 System.out.println("Скорее всего данный товар новый на сайте. " +
                         "Скидка не может быть выше 60% по правилам маркетплейса. " +
-                        "Цена товара до скидки была снижена более 20% Если это не новый товар, то" +
-                        " поставьте в отчете скику, не равную 0");
+                        "Цена товара до скидки была снижена более 20% ");
                 temp[0] = new_cost_f;
                 temp[1] = 60;
+                temp[2] = 1;
                 return temp;
             }
         } else {
