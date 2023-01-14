@@ -1,9 +1,8 @@
 package com.example.demo_01;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -38,6 +37,11 @@ public class TestController {
         Sheet sheet_price = wb_price.getSheetAt(0);
         Sheet sheet_helper = wb_helper.getSheetAt(0);
 
+        XSSFCellStyle cellStyle = wb_price.createCellStyle();
+        cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        cellStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
+
+
         int[] z;
         int flag = 0;
         int f_row = 1;
@@ -57,7 +61,8 @@ public class TestController {
                         Cell cell_price_now_discount = row_price.getCell(13);//скидка действующая
                         Cell cell_price_sale = row_price.getCell(15); //запись скидки
                         Cell cell_price_price = row_price.getCell(12); // запись цены
-
+                        int cost = (int) cell_price_cost.getNumericCellValue();
+                        int sale = (int) cell_price_now_discount.getNumericCellValue();
                         z = serviceCount.sellerCore((int) cell_price_cost.getNumericCellValue(),
                                 (int) cell_price_now_discount.getNumericCellValue(),
                                 (int) cell_helper_sale.getNumericCellValue());
@@ -74,6 +79,7 @@ public class TestController {
 
                         if (z[2] != 0) {
                             Sheet sheet_h = wb_price.getSheet("Примечание");
+                            sheet_h.autoSizeColumn(1);
                             Row row_h = sheet_h.createRow(f_row);
                             f_row += 1;
                             Cell h_0 = row_h.createCell(0);
@@ -92,6 +98,7 @@ public class TestController {
 
                                 case 3:
                                     Cell h_2_2 = row_h.createCell(1);
+                                    h_2_2.setCellStyle(cellStyle);
                                     h_2_2.setCellValue("Цена товара не изменена." +
                                             "Заявленная цена не соответствует правилам сайта. " +
                                             "Укажите более низкую цену");
@@ -99,6 +106,7 @@ public class TestController {
 
                                 case 4:
                                     Cell h_3_2 = row_h.createCell(1);
+                                    h_3_2.setCellStyle(cellStyle);
                                     h_3_2.setCellValue("Цена товара не изенена. " +
                                             "Товару указана цена меньше 50 руб.");
                                     break;
@@ -106,6 +114,14 @@ public class TestController {
                         }
 
                         if (z[2] == 3 | z[2] == 4) {
+                            continue;
+                        }
+                        if (cost == z[0]) {
+                            cell_price_sale.setCellValue(z[1]);
+                            continue;
+                        }
+                        if (sale == z[1]) {
+                            cell_price_price.setCellValue(z[0]);
                             continue;
                         }
                         cell_price_sale.setCellValue(z[1]);
