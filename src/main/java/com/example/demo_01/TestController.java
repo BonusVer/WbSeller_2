@@ -6,6 +6,7 @@ import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.*;
+import java.util.Objects;
 
 @RestController
 public class TestController {
@@ -27,11 +29,20 @@ public class TestController {
 
     @PostMapping("/home")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile[] file)
-            throws IOException {
+            throws IOException, IllegalStateException {
         String filename = "Otchet.xlsx";
-        InputStream file01 = file[0].getInputStream();
-        InputStream file02 = file[1].getInputStream();
+        String message = "";
+
         try {
+            if (ExcelHelper.hasExcelFormat(file[0]) | ExcelHelper.hasExcelFormat(file[1])) {
+                message = "Проверьте загружаемые файлы. Программа принимает только эксель файлы.";
+                return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ResponseMessage(message));
+            }
+
+            InputStream file01 = file[0].getInputStream();
+            InputStream file02 = file[1].getInputStream();
+
+
         XSSFWorkbook wb_price = new XSSFWorkbook(file01);
         XSSFWorkbook wb_helper = new XSSFWorkbook(file02);
         Sheet sheet_price = wb_price.getSheetAt(0);
@@ -41,6 +52,17 @@ public class TestController {
         cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         cellStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
 
+        String h_s = sheet_price.getSheetName();
+        String h_h = "Общий отчет";
+        if (!Objects.equals(h_s, h_h)) {
+            wb_price.close();
+            wb_helper.close();
+            file02.close();
+            file01.close();
+            message = "Отчет ВБ не загружен в первый слот или поврежден." +
+                    "Возможно перепутаны загружаемые файлы";
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ResponseMessage(message));
+        }
 
         int[] z;
         int flag = 0;
@@ -116,6 +138,7 @@ public class TestController {
                         if (z[2] == 3 | z[2] == 4) {
                             continue;
                         }
+                        if (cost == z[0] & sale == z[1]) {continue;}
                         if (cost == z[0]) {
                             cell_price_sale.setCellValue(z[1]);
                             continue;
@@ -143,7 +166,12 @@ public class TestController {
                 .body(out.toByteArray());
         } catch (IOException e) {
             throw new RuntimeException("ошибка номер 1 что то с эксель файлами" + e.getMessage());
+        } catch (IllegalStateException e) {
+            message = "Ошибка в фале.";
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ResponseMessage(message));
+        } catch (NullPointerException e) {
+            message = "Ошибка в загруженном файле. Возможно пропущена цена у артикула.";
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ResponseMessage(message));
         }
-
     }
 }
